@@ -237,7 +237,7 @@ function MENUBUSQUEDA() {
                         window.setTimeout(MENUBUSQUEDA, 0);
                     }
                 } else if (menuOpcion == 0) {
-                    window.setTimeout(MENUBUSQUEDA, 0);
+                    window.setTimeout(MENUPRINCIPAL, 0);
                 } else {
                     alerta.innerHTML = "Entrada incorrecta, Volviendo al menú anterior...";
                     window.setTimeout(MENUBUSQUEDA, 0);
