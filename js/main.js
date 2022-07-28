@@ -62,10 +62,6 @@ const tituloQuitarElementos = "---Quitar Elementos del Carrito---";
 const introMenuPrincipal = "Bienvenido/a al simulador de tienda, aquí podrás ver mi catálogo de items en venta.<br />Por favor elige una opción:<br />1-Buscar Item<br />2-Libretas<br />3-Stickers<br />4-Posters<br />5-Ir al carrito de compras<br />6-Salir";
 const introMenuBusqueda = "---Buscador de Productos---<br />Escriba el tipo o el nombre del ítem que esté buscando.<br />Pista: puede ser un tipo como 'Sticker' o 'Poster', o alguna palabra clave.<br />Escriba '0' para volver al menú principal.";
 
-const introMenu = (clase) => {
-    return "Por favor elija una opción para agregar al carrito: <br/><br/>" + CONTEO(clase) + "<br/>0- Volver al menú anterior.<br/> <br/>Nota: Los precios no incluyen i.v.a."
-}
-
 const introCarrito = () => {
     const precioSinIva = carritoDeCompras.reduce((acumulador, carritoDeCompras) => {
         return acumulador + carritoDeCompras.subtotal;
@@ -120,15 +116,9 @@ function MENUPRINCIPAL() {
         if (menuOpcion >= 1 && menuOpcion <= 6) {
             switch (menuOpcion) {
                 case 1:
-                    titulo.innerHTML = tituloMenuBusqueda;
-                    contenido.innerHTML = introMenuBusqueda;
-                    alerta.replaceChildren();
-                    window.setTimeout(MENUBUSQUEDA, 0);
+                    window.setTimeout(MENUBUSQUEDA(), 0);
                     break;
                 case 2:
-                    titulo.innerHTML = tituloMenuLibretas;
-                    contenido.innerHTML = introMenu("Libreta");
-                    alerta.replaceChildren();
                     window.setTimeout(MENU("Libreta"), 0);
                     break;
                 case 3:
@@ -165,82 +155,86 @@ function MENUPRINCIPAL() {
 }
 
 function MENUBUSQUEDA() {
-    let busqueda = prompt("Ingrese algún dato.");
-    if (busqueda === "0") {
-        titulo.innerHTML = tituloMenuBusqueda;
-        contenido.innerHTML = introMenuBusqueda;
-        alerta.replaceChildren();
-        window.setTimeout(MENUPRINCIPAL, 0);
-    } else {
-        const encontrado = catalogoDeBusqueda.filter(producto => producto.tipo.toLowerCase().includes(busqueda.toLowerCase()) || producto.nombre.toLowerCase().includes(busqueda.toLowerCase()));
-        if (encontrado.length == 0) {
-            alerta.innerHTML = "Lo sentimos," + " '" + busqueda + "' " + "no ha arrojado ninún resultado, lo intentamos de nuevo?";
-            window.setTimeout(MENUBUSQUEDA, 0);
+    titulo.innerHTML = tituloMenuBusqueda;
+    contenido.innerHTML = introMenuBusqueda;
+    alerta.replaceChildren();
+    window.setTimeout(OPCION, 0);
+
+    function OPCION() {
+        let busqueda = prompt("Ingrese algún dato.");
+        if (busqueda === "0") {
+            window.setTimeout(MENUPRINCIPAL, 0);
         } else {
-            const conteo = [];
-            let numeracion = 0;
-            const listaDeBusqueda = (funcion, encontrado) => {
-                for (const item of encontrado) {
-                    numeracion = numeracion + 1;
-                    funcion(item);
+            const encontrado = catalogoDeBusqueda.filter(producto => producto.tipo.toLowerCase().includes(busqueda.toLowerCase()) || producto.nombre.toLowerCase().includes(busqueda.toLowerCase()));
+            if (encontrado.length == 0) {
+                alerta.innerHTML = "Lo sentimos," + " '" + busqueda + "' " + "no ha arrojado ninún resultado, lo intentamos de nuevo?";
+                window.setTimeout(MENUBUSQUEDA, 0);
+            } else {
+                const conteo = [];
+                let numeracion = 0;
+                const listaDeBusqueda = (funcion, encontrado) => {
+                    for (const item of encontrado) {
+                        numeracion = numeracion + 1;
+                        funcion(item);
+                    }
                 }
-            }
-            listaDeBusqueda((encontrado) => {
-                conteo.push(numeracion + "- Tipo: " + encontrado.tipo + ", Nombre: " + encontrado.nombre + ", Precio: $" + encontrado.precio + " Stock: " + encontrado.stock + ".");
-            }, encontrado);
-            contenido.innerHTML = "Hemos encontrado:<br />" + conteo.join("<br />") + "<br />Seleccione el ítem que desee agregar al carrito: <br />0- Volver al menú de Busqueda.";
-            alerta.replaceChildren();
-            window.setTimeout(OPCIONBUSQUEDA, 0);
+                listaDeBusqueda((encontrado) => {
+                    conteo.push(numeracion + "- Tipo: " + encontrado.tipo + ", Nombre: " + encontrado.nombre + ", Precio: $" + encontrado.precio + " Stock: " + encontrado.stock + ".");
+                }, encontrado);
+                contenido.innerHTML = "Hemos encontrado:<br />" + conteo.join("<br />") + "<br />Seleccione el ítem que desee agregar al carrito: <br />0- Volver al menú de Busqueda.";
+                alerta.replaceChildren();
+                window.setTimeout(OPCIONBUSQUEDA, 0);
 
-            function OPCIONBUSQUEDA() {
-                let menuOpcion = parseInt(prompt("Ingrese una Opción"));
-                if (menuOpcion > 0 && menuOpcion <= conteo.length) {
-                    if (catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock > 0) {
-                        alerta.innerHTML = "Cuantos/as " + encontrado[(menuOpcion - 1)].nombre + " desea agregar al carrito?";
-                        window.setTimeout(OPCIONCANTIDAD, 0);
+                function OPCIONBUSQUEDA() {
+                    let menuOpcion = parseInt(prompt("Ingrese una Opción"));
+                    if (menuOpcion > 0 && menuOpcion <= conteo.length) {
+                        if (catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock > 0) {
+                            alerta.innerHTML = "Cuantos/as " + encontrado[(menuOpcion - 1)].nombre + " desea agregar al carrito?";
+                            window.setTimeout(OPCIONCANTIDAD, 0);
 
-                        function OPCIONCANTIDAD() {
-                            let cantidades = parseInt(prompt("Ingrese cantidad"));
-                            if (catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock >= cantidades) {
-                                if (cantidades >= 1) {
-                                    catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock = catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock - cantidades;
-                                    carritoDeCompras.push({
-                                        id: catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].id,
-                                        tipo: catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].tipo,
-                                        cantidad: cantidades,
-                                        nombre: catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].nombre,
-                                        subtotal: (cantidades * catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].precio)
-                                    });
-                                    if (cantidades == 1) {
-                                        alerta.innerHTML = catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].nombre + " ha sido añadido al carrito.";
-                                        contenido.innerHTML = introMenuBusqueda;
-                                        window.setTimeout(MENUBUSQUEDA, 0);
+                            function OPCIONCANTIDAD() {
+                                let cantidades = parseInt(prompt("Ingrese cantidad"));
+                                if (catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock >= cantidades) {
+                                    if (cantidades >= 1) {
+                                        catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock = catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock - cantidades;
+                                        carritoDeCompras.push({
+                                            id: catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].id,
+                                            tipo: catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].tipo,
+                                            cantidad: cantidades,
+                                            nombre: catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].nombre,
+                                            subtotal: (cantidades * catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].precio)
+                                        });
+                                        if (cantidades == 1) {
+                                            alerta.innerHTML = catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].nombre + " ha sido añadido al carrito.";
+                                            contenido.innerHTML = introMenuBusqueda;
+                                            window.setTimeout(MENUBUSQUEDA, 0);
+                                        } else {
+                                            alerta.innerHTML = cantidades + "x " + catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].nombre + " han sido añadidos al carrito.";
+                                            contenido.innerHTML = introMenuBusqueda;
+                                            window.setTimeout(MENUBUSQUEDA, 0);
+                                        }
                                     } else {
-                                        alerta.innerHTML = cantidades + "x " + catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].nombre + " han sido añadidos al carrito.";
+                                        alerta.innerHTML = "Atención: Debes escribir un numero entero mayor a 1.";
                                         contenido.innerHTML = introMenuBusqueda;
                                         window.setTimeout(MENUBUSQUEDA, 0);
                                     }
                                 } else {
-                                    alerta.innerHTML = "Atención: Debes escribir un numero entero mayor a 1.";
+                                    alerta.innerHTML = "Atención: Stock insuficiente para cumplir la demanda, puedes pedir " + catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock + " unidades o menos.";
                                     contenido.innerHTML = introMenuBusqueda;
                                     window.setTimeout(MENUBUSQUEDA, 0);
                                 }
-                            } else {
-                                alerta.innerHTML = "Atención: Stock insuficiente para cumplir la demanda, puedes pedir " + catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock + " unidades o menos.";
-                                contenido.innerHTML = introMenuBusqueda;
-                                window.setTimeout(MENUBUSQUEDA, 0);
                             }
+                        } else {
+                            alerta.innerHTML = "Al parecer nos hemos quedado sin stock, por favor intenta mas tarde.";
+                            contenido.innerHTML = introMenuBusqueda;
+                            window.setTimeout(MENUBUSQUEDA, 0);
                         }
+                    } else if (menuOpcion == 0) {
+                        window.setTimeout(MENUPRINCIPAL, 0);
                     } else {
-                        alerta.innerHTML = "Al parecer nos hemos quedado sin stock, por favor intenta mas tarde.";
-                        contenido.innerHTML = introMenuBusqueda;
+                        alerta.innerHTML = "Entrada incorrecta, Volviendo al menú anterior...";
                         window.setTimeout(MENUBUSQUEDA, 0);
                     }
-                } else if (menuOpcion == 0) {
-                    window.setTimeout(MENUPRINCIPAL, 0);
-                } else {
-                    alerta.innerHTML = "Entrada incorrecta, Volviendo al menú anterior...";
-                    window.setTimeout(MENUBUSQUEDA, 0);
                 }
             }
         }
@@ -248,14 +242,26 @@ function MENUBUSQUEDA() {
 }
 
 function MENU(clase) {
+    const conteo = [];
     const lista = catalogoDeBusqueda.filter(producto => producto.tipo == clase);
-    contenido.innerHTML = "Por favor elija una opción para agregar al carrito: <br/><br/>" + CONTEO(clase) + "<br/>0- Volver al menú anterior.<br/> <br/>Nota: Los precios no incluyen i.v.a."
-
+    let numeracion = 0;
+    const enumerador = (funcion, lista) => {
+        for (const item of lista) {
+            numeracion = numeracion + 1;
+            funcion(item);
+        }
+    }
+    enumerador((lista) => {
+        conteo.push(numeracion + "- " + lista.nombre + ",\n Precio: $" + lista.precio + ", Stock: " + lista.stock + ".");
+    }, lista);
+    titulo.innerHTML = tituloMenuLibretas;
+    contenido.innerHTML = "Por favor elija una opción para agregar al carrito: <br/><br/>" + conteo + "<br/>0- Volver al menú anterior.<br/> <br/>Nota: Los precios no incluyen i.v.a."
+    alerta.replaceChildren();
     window.setTimeout(OPCION, 0);
 
     function OPCION() {
         let menuOpcion = parseInt(prompt("Ingrese una Opción."));
-        if (menuOpcion > 0 && menuOpcion <= CONTEO(clase).length) {
+        if (menuOpcion > 0 && menuOpcion <= conteo.length) {
             if (catalogoDeBusqueda[lista[(menuOpcion - 1)].id].stock > 0) {
                 alerta.innerHTML = "Cuantos/as " + lista[(menuOpcion - 1)].nombre + " desea agregar al carrito?";
                 window.setTimeout(OPCIONCANTIDAD, 0);
