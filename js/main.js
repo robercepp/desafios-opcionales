@@ -2,13 +2,6 @@
 
 //Anabella Avena - Ilustradora Gráfica - módulo eCommerce.
 
-const catalogoDeBusqueda = [];
-const carritoDeCompras = [];
-let nombre = "";
-let apellido = "";
-const iva = 1.21;
-
-
 //Constructor de Productos.
 class Producto {
     constructor(id, tipo, nombre, precio, stockDisponible) {
@@ -19,35 +12,10 @@ class Producto {
         this.stock = stockDisponible;
         this.stockDisponible = parseInt(stockDisponible);
     }
-    añadir(cantidad) {
-        if (this.stock > 0) {
-            cantidad = parseInt(prompt("Cuanto/as " + this.nombre + " deseas añadir al carrito?\nStock disponible: " + this.stock));
-            if (this.stock >= cantidad) {
-                if (cantidad >= 1) {
-                    this.stock = this.stock - cantidad;
-                    carritoDeCompras.push({
-                        id: this.id,
-                        tipo: this.tipo,
-                        cantidad: cantidad,
-                        nombre: this.nombre,
-                        subtotal: (cantidad * this.precio)
-                    });
-                    if (cantidad == 1) {
-                        return alert(this.nombre + " ha sido añadido al carrito.");
-                    } else {
-                        return alert(cantidad + "x " + this.nombre + " han sido añadidos al carrito.");
-                    }
-                } else {
-                    return alert("Atención: Debes escribir un numero entero mayor a 1.");
-                }
-            } else {
-                return alert("Atención: Stock insuficiente para cumplir la demanda, puedes pedir " + this.stock + " unidades o menos.");
-            }
-        } else {
-            return alert("Al parecer nos hemos quedado sin stock, por favor intenta mas tarde.");
-        }
-    }
 }
+//esto debe ir aquí arriba sino no anda nada... :(
+const catalogoDeBusqueda = [];
+const carritoDeCompras = [];
 
 // Creando Productos
 //Libretas
@@ -71,62 +39,143 @@ const posterDeGatos = new Producto(11, "Poster", "Poster de Gatos", 5.50, 7);
 //Se crea el catálogo de búsqueda
 catalogoDeBusqueda.push(libretaChicasGamer, libretaSixFanarts, libretaLuluMartins, libretaChristineHug, stickerSirenas, stickerChicas, stickerHalloween, stickerAnimales, posterNocheVerano, posterAmantesMariposa, posterDeSanValentin, posterDeGatos);
 
-//A partir de aquí comienza el menú...
+//variables y constantes generales
+let nombre = "";
+let apellido = "";
+const iva = 1.21;
 
-//nombre = prompt("Ingrese su nombre de pila (su apellido se lo preguntaremos luego).");
-//apellido = prompt("Ingrese su apellido.");
+let titulo = document.createElement("h4");
+document.getElementsByClassName("titulo-relativo")[0].appendChild(titulo);
+let contenido = document.createElement("p");
+document.getElementsByClassName("contenido")[0].appendChild(contenido);
+let alerta = document.createElement("p");
+document.getElementsByClassName("alertas")[0].append(alerta);
+
+
+const tituloMenuPrincipal = "---Menu Principal---";
+const tituloMenuBusqueda = "---Menu de Busqueda---";
+const tituloMenuLibretas = "---Menú de Libretas---";
+const tituloMenuStickers = "---Menú de Stickers---";
+const tituloMenuPosters = "---Menú de Posters---";
+const tituloMenuCarrito = "---Carrito de compras---";
+const tituloQuitarElementos = "---Quitar Elementos del Carrito---";
+const introMenuPrincipal = "Bienvenido/a al simulador de tienda, aquí podrás ver mi catálogo de items en venta.<br />Por favor elige una opción:<br />1-Buscar Item<br />2-Libretas<br />3-Stickers<br />4-Posters<br />5-Ir al carrito de compras<br />6-Salir";
+const introMenuBusqueda = "---Buscador de Productos---<br />Escriba el tipo o el nombre del ítem que esté buscando.<br />Pista: puede ser un tipo como 'Sticker' o 'Poster', o alguna palabra clave.<br />Escriba '0' para volver al menú principal.";
+
+const introMenu = (clase) => {
+    return "Por favor elija una opción para agregar al carrito: <br/><br/>" + CONTEO(clase) + "<br/>0- Volver al menú anterior.<br/> <br/>Nota: Los precios no incluyen i.v.a."
+}
+
+const introCarrito = () => {
+    const precioSinIva = carritoDeCompras.reduce((acumulador, carritoDeCompras) => {
+        return acumulador + carritoDeCompras.subtotal;
+    }, 0);
+    const precioConIva = precioSinIva * iva;
+    const cantidadProductos = carritoDeCompras.reduce((acumulador, carritoDeCompras) => {
+        return acumulador + carritoDeCompras.cantidad;
+    }, 0);
+    const listadoCarrito = carritoDeCompras.map((carritoDeCompras) => "-" + carritoDeCompras.cantidad + "x " + carritoDeCompras.nombre + "<br />Subtotal: $" + carritoDeCompras.subtotal + "<br />");
+    return "Repasemos lo que has cargado en el carrito antes de confirmar...<br/><br/>La cantidad de Items son: " + cantidadProductos + "<br/>Un resumen de los Items que pediste:<br/>" + listadoCarrito + "<br/>El costo total (Incluyendo IVA) es de: $" + (precioConIva.toFixed(2) + "-.") + "<br/>Elige una opción:<br/>1-Pagar monto.<br/>2-Quitar elementos del carrito.<br/>3-Volver atrás.<br/>4-Cancelar compra."
+}
+
+const introCierreCompra = "Por favor introduzca a continuación un correo electrónico para poder enviarte los productos.";
+
+
+
+//Esta función con argumento funciona para filtrar varios elementos del catalogo sin tener que repetir el mismo código en cada menú. 
+function CONTEO(clase) {
+    const conteo = [];
+    const lista = catalogoDeBusqueda.filter(producto => producto.tipo == clase);
+    let numeracion = 0;
+    const enumerador = (funcion, lista) => {
+        for (const item of lista) {
+            numeracion = numeracion + 1;
+            funcion(item);
+        }
+    }
+    enumerador((lista) => {
+        conteo.push(numeracion + "- " + lista.nombre + ",\n Precio: $" + lista.precio + ", Stock: " + lista.stock + ".");
+    }, lista);
+    return conteo.join("<br/>");
+}
+
+
+//A partir de aquí comienza el menú...
+nombre = prompt("Ingrese su nombre de pila (su apellido se lo preguntaremos luego).");
+apellido = prompt("Ingrese su apellido.");
+
+let bienvenido = document.createElement("p");
+bienvenido.innerHTML = "bienvenido " + nombre;
+document.getElementsByClassName("bienvenido")[0].appendChild(bienvenido);
 
 MENUPRINCIPAL();
 
 function MENUPRINCIPAL() {
+    titulo.innerHTML = tituloMenuPrincipal;
+    contenido.innerHTML = introMenuPrincipal;
+    window.setTimeout(OPCIONES, 0);
 
-    var h4 = document.createElement("h4");
-    h4.textContent += "---Menú principal---";
-    document.getElementsByClassName("titulo-relativo")[0].appendChild(h4);
-}
+    function OPCIONES() {
+        let menuOpcion = parseInt(prompt("Ingrese una opción"));
+        if (menuOpcion >= 1 && menuOpcion <= 6) {
+            switch (menuOpcion) {
+                case 1:
+                    titulo.innerHTML = tituloMenuBusqueda;
+                    contenido.innerHTML = introMenuBusqueda;
+                    alerta.replaceChildren();
+                    window.setTimeout(MENUBUSQUEDA, 0);
+                    break;
+                case 2:
+                    titulo.innerHTML = tituloMenuLibretas;
+                    contenido.innerHTML = introMenu("Libreta");
+                    alerta.replaceChildren();
+                    window.setTimeout(MENU("Libreta"), 0);
+                    break;
+                case 3:
+                    titulo.innerHTML = tituloMenuStickers;
+                    contenido.innerHTML = introMenu("Sticker");
+                    alerta.replaceChildren();
+                    window.setTimeout(MENU("Sticker"), 0);
+                    break;
+                case 4:
+                    titulo.innerHTML = tituloMenuPosters;
+                    contenido.innerHTML = introMenu("Poster");
+                    alerta.replaceChildren();
+                    window.setTimeout(MENU("Poster"), 0);
+                    break;
+                case 5:
+                    titulo.innerHTML = tituloMenuCarrito;
+                    contenido.innerHTML = introCarrito();
+                    alerta.replaceChildren();
+                    window.setTimeout(MENUCARRITO, 0);
+                    break;
+                case 6:
+                    window.setTimeout(EXITPROGRAM(), 0);
+                    break;
+            }
+        } else {
+            window.setTimeout(ALERTA, 0);
 
-/*    
-    let menuOpcion = parseInt(prompt("--- Simulador eCommerce --- \n--- Anabella Avena - Ilustradora Freelance ---\nBienvenido/a al simulador de tienda, aquí podrás ver mi catálogo de items en venta.\nPor favor elige una opción:\n1-Buscar Item\n2-Libretas\n3-Stickers\n4-Posters\n5-Ir al carrito de compras\n6-Salir "));
-    if (menuOpcion >= 1 && menuOpcion <= 6) {
-        switch (menuOpcion) {
-            case 1:
-                MENUBUSQUEDA();
-                break;
-            case 2:
-                alert("Ha entrado en el menú libretas...");
-                MENU("Libreta", "libretas");
-                break;
-            case 3:
-                alert("Ha entrado en el menú Stikers");
-                MENU("Sticker", "stickers");
-                break;
-            case 4:
-                alert("Ha entrado en el menú Posters");
-                MENU("Poster", "posters");
-                break;
-            case 5:
-                alert("Accediendo al Carrito de Compras");
-                MENUCARRITO();
-                break;
-            case 6:
-                EXITPROGRAM();
-                break;
+            function ALERTA() {
+                alerta.innerHTML = "Por favor elija una opción del 1 al 6. volvamos a intentarlo.";
+                window.setTimeout(MENUPRINCIPAL, 0);
+            }
         }
-    } else {
-        alert("Por favor elija una opción del 1 al 5 \n \n volvamos a intentarlo.");
-        MENUPRINCIPAL();
     }
 }
 
 function MENUBUSQUEDA() {
-    let busqueda = prompt("---Buscador de Productos---\nEscriba el tipo o el nombre del ítem que esté buscando.\nPista: puede ser un tipo como 'Sticker' o 'Poster', o alguna palabra clave.\nEscriba '0' para volver al menú principal.");
+    let busqueda = prompt("Ingrese algún dato.");
     if (busqueda === "0") {
-        MENUPRINCIPAL();
+        titulo.innerHTML = tituloMenuBusqueda;
+        contenido.innerHTML = introMenuBusqueda;
+        alerta.replaceChildren();
+        window.setTimeout(MENUPRINCIPAL, 0);
     } else {
         const encontrado = catalogoDeBusqueda.filter(producto => producto.tipo.toLowerCase().includes(busqueda.toLowerCase()) || producto.nombre.toLowerCase().includes(busqueda.toLowerCase()));
         if (encontrado.length == 0) {
-            alert("Lo sentimos," + " '" + busqueda + "' " + "no ha arrojado ninún resultado, lo intentamos de nuevo?")
-            MENUBUSQUEDA();
+            alerta.innerHTML = "Lo sentimos," + " '" + busqueda + "' " + "no ha arrojado ninún resultado, lo intentamos de nuevo?";
+            window.setTimeout(MENUBUSQUEDA, 0);
         } else {
             const conteo = [];
             let numeracion = 0;
@@ -139,107 +188,120 @@ function MENUBUSQUEDA() {
             listaDeBusqueda((encontrado) => {
                 conteo.push(numeracion + "- Tipo: " + encontrado.tipo + ", Nombre: " + encontrado.nombre + ", Precio: $" + encontrado.precio + " Stock: " + encontrado.stock + ".");
             }, encontrado);
-            let menuOpcion = parseInt(prompt("Hemos encontrado:\n" + conteo.join("\n") + "\nSeleccione el ítem que desee agregar al carrito: \n0- Volver al menú de Busqueda."));
-            if (menuOpcion > 0 && menuOpcion <= conteo.length) {
-                if (catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock > 0) {
-                    let cantidades = parseInt(prompt("Cuantos/as " + encontrado[(menuOpcion - 1)].nombre + " desea agregar al carrito?"));
-                    if (catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock >= cantidades) {
-                        if (cantidades >= 1) {
-                            catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock = catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock - cantidades;
-                            carritoDeCompras.push({
-                                id: catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].id,
-                                tipo: catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].tipo,
-                                cantidad: cantidades,
-                                nombre: catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].nombre,
-                                subtotal: (cantidades * catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].precio)
-                            });
-                            if (cantidades == 1) {
-                                alert(catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].nombre + " ha sido añadido al carrito.");
-                                MENUBUSQUEDA();
+            contenido.innerHTML = "Hemos encontrado:<br />" + conteo.join("<br />") + "<br />Seleccione el ítem que desee agregar al carrito: <br />0- Volver al menú de Busqueda.";
+            alerta.replaceChildren();
+            window.setTimeout(OPCIONBUSQUEDA, 0);
+
+            function OPCIONBUSQUEDA() {
+                let menuOpcion = parseInt(prompt("Ingrese una Opción"));
+                if (menuOpcion > 0 && menuOpcion <= conteo.length) {
+                    if (catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock > 0) {
+                        alerta.innerHTML = "Cuantos/as " + encontrado[(menuOpcion - 1)].nombre + " desea agregar al carrito?";
+                        window.setTimeout(OPCIONCANTIDAD, 0);
+
+                        function OPCIONCANTIDAD() {
+                            let cantidades = parseInt(prompt("Ingrese cantidad"));
+                            if (catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock >= cantidades) {
+                                if (cantidades >= 1) {
+                                    catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock = catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock - cantidades;
+                                    carritoDeCompras.push({
+                                        id: catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].id,
+                                        tipo: catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].tipo,
+                                        cantidad: cantidades,
+                                        nombre: catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].nombre,
+                                        subtotal: (cantidades * catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].precio)
+                                    });
+                                    if (cantidades == 1) {
+                                        alerta.innerHTML = catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].nombre + " ha sido añadido al carrito.";
+                                        contenido.innerHTML = introMenuBusqueda;
+                                        window.setTimeout(MENUBUSQUEDA, 0);
+                                    } else {
+                                        alerta.innerHTML = cantidades + "x " + catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].nombre + " han sido añadidos al carrito.";
+                                        contenido.innerHTML = introMenuBusqueda;
+                                        window.setTimeout(MENUBUSQUEDA, 0);
+                                    }
+                                } else {
+                                    alerta.innerHTML = "Atención: Debes escribir un numero entero mayor a 1.";
+                                    contenido.innerHTML = introMenuBusqueda;
+                                    window.setTimeout(MENUBUSQUEDA, 0);
+                                }
                             } else {
-                                alert(cantidades + "x " + catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].nombre + " han sido añadidos al carrito.");
-                                MENUBUSQUEDA();
+                                alerta.innerHTML = "Atención: Stock insuficiente para cumplir la demanda, puedes pedir " + catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock + " unidades o menos.";
+                                contenido.innerHTML = introMenuBusqueda;
+                                window.setTimeout(MENUBUSQUEDA, 0);
                             }
-                        } else {
-                            alert("Atención: Debes escribir un numero entero mayor a 1.");
-                            MENUBUSQUEDA();
                         }
                     } else {
-                        alert("Atención: Stock insuficiente para cumplir la demanda, puedes pedir " + catalogoDeBusqueda[encontrado[(menuOpcion - 1)].id].stock + " unidades o menos.");
-                        MENUBUSQUEDA();
+                        alerta.innerHTML = "Al parecer nos hemos quedado sin stock, por favor intenta mas tarde.";
+                        contenido.innerHTML = introMenuBusqueda;
+                        window.setTimeout(MENUBUSQUEDA, 0);
                     }
+                } else if (menuOpcion == 0) {
+                    window.setTimeout(MENUBUSQUEDA, 0);
                 } else {
-                    alert("Al parecer nos hemos quedado sin stock, por favor intenta mas tarde.");
-                    MENUBUSQUEDA();
+                    alerta.innerHTML = "Entrada incorrecta, Volviendo al menú anterior...";
+                    window.setTimeout(MENUBUSQUEDA, 0);
                 }
-            } else if (menuOpcion == 0) {
-                MENUBUSQUEDA();
-            } else {
-                alert("Entrada incorrecta, Volviendo al menú anterior...")
-                MENUBUSQUEDA();
             }
         }
     }
 }
 
-function MENU(tipo, tipoPlural) {
-    const conteo = [];
-    const lista = catalogoDeBusqueda.filter(producto => producto.tipo == tipo);
-    let numeracion = 0;
-    const enumerador = (funcion, lista) => {
-        for (const item of lista) {
-            numeracion = numeracion + 1;
-            funcion(item);
-        }
-    }
-    enumerador((lista) => {
-        conteo.push(numeracion + "- " + lista.nombre + ",\n Precio: $" + lista.precio + ", Stock: " + lista.stock + ".");
-    }, lista);
-    let menuOpcion = parseInt(prompt("---Anabella Avena - Ilustradora Freelance---\n---Menú de " + tipoPlural + "---\nPor favor elija una opción para agregar al carrito:\n" + conteo.join("\n") + "\n0- Volver al menú anterior.\n \nNota: Los precios no incluyen i.v.a."));
-    if (menuOpcion > 0 && menuOpcion <= conteo.length) {
-        if (catalogoDeBusqueda[lista[(menuOpcion - 1)].id].stock > 0) {
-            let cantidades = parseInt(prompt("Cuantos/as " + lista[(menuOpcion - 1)].nombre + " desea agregar al carrito?"));
-            if (catalogoDeBusqueda[lista[(menuOpcion - 1)].id].stock >= cantidades) {
-                if (cantidades >= 1) {
-                    catalogoDeBusqueda[lista[(menuOpcion - 1)].id].stock = catalogoDeBusqueda[lista[(menuOpcion - 1)].id].stock - cantidades;
-                    carritoDeCompras.push({
-                        id: catalogoDeBusqueda[lista[(menuOpcion - 1)].id].id,
-                        tipo: catalogoDeBusqueda[lista[(menuOpcion - 1)].id].tipo,
-                        cantidad: cantidades,
-                        nombre: catalogoDeBusqueda[lista[(menuOpcion - 1)].id].nombre,
-                        subtotal: (cantidades * catalogoDeBusqueda[lista[(menuOpcion - 1)].id].precio)
-                    });
-                    if (cantidades == 1) {
-                        alert(catalogoDeBusqueda[lista[(menuOpcion - 1)].id].nombre + " ha sido añadido al carrito.");
-                        MENU(tipo, tipoPlural);
+function MENU(clase) {
+    const lista = catalogoDeBusqueda.filter(producto => producto.tipo == clase);
+    contenido.innerHTML = "Por favor elija una opción para agregar al carrito: <br/><br/>" + CONTEO(clase) + "<br/>0- Volver al menú anterior.<br/> <br/>Nota: Los precios no incluyen i.v.a."
+
+    window.setTimeout(OPCION, 0);
+
+    function OPCION() {
+        let menuOpcion = parseInt(prompt("Ingrese una Opción."));
+        if (menuOpcion > 0 && menuOpcion <= CONTEO(clase).length) {
+            if (catalogoDeBusqueda[lista[(menuOpcion - 1)].id].stock > 0) {
+                alerta.innerHTML = "Cuantos/as " + lista[(menuOpcion - 1)].nombre + " desea agregar al carrito?";
+                window.setTimeout(OPCIONCANTIDAD, 0);
+
+                function OPCIONCANTIDAD() {
+                    let cantidades = parseInt(prompt("Ingrese cantidad"));
+                    if (catalogoDeBusqueda[lista[(menuOpcion - 1)].id].stock >= cantidades) {
+                        if (cantidades >= 1) {
+                            catalogoDeBusqueda[lista[(menuOpcion - 1)].id].stock = catalogoDeBusqueda[lista[(menuOpcion - 1)].id].stock - cantidades;
+                            carritoDeCompras.push({
+                                id: catalogoDeBusqueda[lista[(menuOpcion - 1)].id].id,
+                                tipo: catalogoDeBusqueda[lista[(menuOpcion - 1)].id].tipo,
+                                cantidad: cantidades,
+                                nombre: catalogoDeBusqueda[lista[(menuOpcion - 1)].id].nombre,
+                                subtotal: (cantidades * catalogoDeBusqueda[lista[(menuOpcion - 1)].id].precio)
+                            });
+                            if (cantidades == 1) {
+                                alerta.innerHTML = catalogoDeBusqueda[lista[(menuOpcion - 1)].id].nombre + " ha sido añadido al carrito.";
+                                window.setTimeout(MENU(clase), 0);
+                            } else {
+                                alerta.innerHTML = cantidades + "x " + catalogoDeBusqueda[lista[(menuOpcion - 1)].id].nombre + " han sido añadidos al carrito.";
+                                window.setTimeout(MENU(clase), 0);
+                            }
+                        } else {
+                            alerta.innerHTML = "Atención: Debes escribir un numero entero mayor a 1.";
+                            window.setTimeout(MENU(clase), 0);
+                        }
                     } else {
-                        alert(cantidades + "x " + catalogoDeBusqueda[lista[(menuOpcion - 1)].id].nombre + " han sido añadidos al carrito.");
-                        MENU(tipo, tipoPlural);
+                        alerta.innerHTML = "Atención: Stock insuficiente para cumplir la demanda, puedes pedir " + catalogoDeBusqueda[lista[(menuOpcion - 1)].id].stock + " unidades o menos.";
+                        window.setTimeout(MENU(clase), 0);
                     }
-                } else {
-                    alert("Atención: Debes escribir un numero entero mayor a 1.");
-                    MENU(tipo, tipoPlural);
                 }
             } else {
-                alert("Atención: Stock insuficiente para cumplir la demanda, puedes pedir " + catalogoDeBusqueda[lista[(menuOpcion - 1)].id].stock + " unidades o menos.");
-                MENU(tipo, tipoPlural);
+                alerta.innerHTML = "Al parecer nos hemos quedado sin stock, por favor intenta mas tarde.";
+                window.setTimeout(MENU(clase), 0);
             }
+        } else if (menuOpcion == 0) {
+            window.setTimeout(MENUPRINCIPAL(), 0);
         } else {
-            alert("Al parecer nos hemos quedado sin stock, por favor intenta mas tarde.");
-            MENU(tipo, tipoPlural);
+            alerta.innerHTML = "Entrada incorrecta, Volviendo al menú anterior...";
+            window.setTimeout(MENU(clase), 0);
         }
-    } else if (menuOpcion == 0) {
-        MENUPRINCIPAL();
-    } else {
-        alert("Entrada incorrecta, Volviendo al menú anterior...")
-        MENU(tipo, tipoPlural);
     }
 }
 
 function MENUCARRITO() {
-    let pago;
-    pago = parseFloat(pago);
-    let menuOpcion = 0;
     const precioSinIva = carritoDeCompras.reduce((acumulador, carritoDeCompras) => {
         return acumulador + carritoDeCompras.subtotal;
     }, 0);
@@ -247,49 +309,77 @@ function MENUCARRITO() {
     const cantidadProductos = carritoDeCompras.reduce((acumulador, carritoDeCompras) => {
         return acumulador + carritoDeCompras.cantidad;
     }, 0);
-    const listadoCarrito = carritoDeCompras.map((carritoDeCompras) => "-" + carritoDeCompras.cantidad + "x " + carritoDeCompras.nombre + "\nSubtotal: $" + carritoDeCompras.subtotal + "\n");
-    menuOpcion = prompt("---Anabella Avena - Ilustradora Freelance---\n---Carrito de Compras---\nRepasemos lo que has cargado en el carrito antes de confirmar...\nLa cantidad de Items son: " + cantidadProductos + "\nUn resumen de los Items que pediste:\n" + listadoCarrito + "\nEl costo total (Incluyendo IVA) es de: $" + (precioConIva.toFixed(2) + "-.") + "\nElige una opción:\n1-Pagar monto.\n2-Quitar elementos del carrito.\n3-Volver atrás.\n4-Cancelar compra.");
-    menuOpcion = parseInt(menuOpcion);
-    if (menuOpcion >= 1 && menuOpcion <= 4) {
-        switch (menuOpcion) {
-            case 1:
-                if (cantidadProductos > 0) {
-                    pago = prompt("---Carrito de Compras---\nLa suma Total a pagar es de: $ " + precioConIva.toFixed(2) + "\nPor favor ingrese el monto especificado arriba para acreditar pago...");
-                    if (pago == precioConIva.toFixed(2)) {
-                        alert("---Carrito de Compras---\nEl pago de: $" + precioConIva.toFixed(2) + " se ha acreditado correctamente.")
-                        CIERREDECOMPRA();
-                    } else if (pago > precioConIva) {
-                        let vuelto = pago - precioConIva.toFixed(2);
-                        alert("---Carrito de Compras---\nAl parecer nos has enviado mas dinero del que era necesario, por ello te reenviamos $" + vuelto.toFixed(2) + " como vuelto por tu compra.")
-                        CIERREDECOMPRA();
-                    } else if (pago < precioConIva && pago > 0) {
-                        let pagoInsuficiente = precioConIva.toFixed(2) - pago;
-                        alert("---Carrito de Compras---\nVaya!, al parecer has pagado $" + pago + ". Lamentablemente te faltan $" + pagoInsuficiente.toFixed(2) + " para completar los $" + precioConIva.toFixed(2) + " que se necesitan.\nTe devolvemos el dinero, Volvamos a completar la transacción.");
-                        MENUCARRITO();
-                    } else if (pago <= 0) {
-                        alert("---Carrito de Compras---\nAtención, no puedes pagar ingresando números negativos\nIntentemos nuevamente.");
-                        MENUCARRITO();
+    let pago;
+    pago = parseFloat(pago);
+    let menuOpcion = 0;
+    window.setTimeout(OPCION, 0);
+
+    function OPCION() {
+        menuOpcion = parseInt(prompt("Ingrese una Opción"));
+        if (menuOpcion >= 1 && menuOpcion <= 4) {
+            switch (menuOpcion) {
+                case 1:
+                    if (cantidadProductos > 0) {
+                        alerta.innerHTML = "La suma Total a pagar es de: $ " + precioConIva.toFixed(2) + "<br />Por favor ingrese el monto especificado arriba para acreditar pago...";
+                        window.setTimeout(CASO1, 0);
+
+                        function CASO1() {
+                            pago = prompt("Ingrese un monto ($)");
+                            if (pago == precioConIva.toFixed(2)) {
+                                alerta.innerHTML = "El pago de: $" + precioConIva.toFixed(2) + " se ha acreditado correctamente.";
+                                contenido.innerHTML = introCierreCompra;
+                                window.setTimeout(CIERREDECOMPRA(), 0);
+                            } else if (pago > precioConIva) {
+                                let vuelto = pago - precioConIva.toFixed(2);
+                                alerta.innerHTML = "Al parecer nos has enviado mas dinero del que era necesario, por ello te reenviamos $" + vuelto.toFixed(2) + " como vuelto por tu compra.";
+                                contenido.innerHTML = introCierreCompra;
+                                window.setTimeout(CIERREDECOMPRA(), 0);
+                            } else if (pago < precioConIva && pago > 0) {
+                                let pagoInsuficiente = precioConIva.toFixed(2) - pago;
+                                alerta.innerHTML = "Vaya!, al parecer has pagado $" + pago + ". Lamentablemente te faltan $" + pagoInsuficiente.toFixed(2) + " para completar los $" + precioConIva.toFixed(2) + " que se necesitan.\nTe devolvemos el dinero, Volvamos a completar la transacción.";
+                                window.setTimeout(MENUCARRITO(), 0);
+                            } else if (pago <= 0) {
+                                alerta.innerHTML = "Atención, no puedes pagar ingresando números negativos<br />Intentemos nuevamente.";
+                                window.setTimeout(MENUCARRITO(), 0);
+                            }
+                        }
+                    } else {
+                        alerta.innerHTML = "Lo sentimos. no puedes continuar si no has cargado ningun ítem en el carrito, te enviaremos de vuelta al menú de compras.";
+                        window.setTimeout(MENUPRINCIPAL(), 0);
                     }
-                } else {
-                    alert("Lo sentimos. no puedes continuar si no has cargado ningun ítem en el carrito, te enviaremos de vuelta al menú de compras.");
-                    MENUPRINCIPAL();
-                }
-                break;
-            case 2:
-                QUITARELEMENTOS();
-                break;
-            case 3:
-                VOLVERALMENU();
-                break;
-            case 4:
-                carritoDeCompras = [];
-                EXITPROGRAM();
-                break;
+                    break;
+                case 2:
+                    titulo.innerHTML = tituloQuitarElementos;
+                    contenido.innerHTML = introQuitar();
+                    window.setTimeout(QUITARELEMENTOS(), 0);
+                    break;
+                case 3:
+                    window.setTimeout(MENUPRINCIPAL(), 0);
+                    break;
+                case 4:
+                    window.setTimeout(EXITPROGRAM(), 0);
+                    break;
+            }
+        } else {
+            alerta.innerHTML = "Por favor ingrese un número del 1 al 4.";
+            window.setTimeout(MENUCARRITO(), 0);
         }
-    } else {
-        alert("Por favor ingrese un número del 1 al 4.");
-        MENUCARRITO();
     }
+}
+
+const introQuitar = () => {
+    const conteo = [];
+    let numeracion = 0;
+    const listaItemsBorrar = (funcion, carritoDeCompras) => {
+        for (const item of carritoDeCompras) {
+            numeracion = numeracion + 1;
+            funcion(item);
+        }
+    }
+    listaItemsBorrar((carritoDeCompras) => {
+        conteo.push(numeracion + "- " + carritoDeCompras.cantidad + "x " + carritoDeCompras.nombre + ".");
+    }, carritoDeCompras);
+    return "Los Ítems cargados en el carrito de compras:<br />" + conteo.join("<br />") + "<br />Elija el Ítem que desea eliminar<br />0- para volver al menú anterior."
 }
 
 function QUITARELEMENTOS() {
@@ -304,63 +394,82 @@ function QUITARELEMENTOS() {
     listaItemsBorrar((carritoDeCompras) => {
         conteo.push(numeracion + "- " + carritoDeCompras.cantidad + "x " + carritoDeCompras.nombre + ".");
     }, carritoDeCompras);
-    let menuOpcion = parseInt(prompt("Los Ítems cargados en el carrito de compras:\n" + conteo.join("\n") + "\nElija el Ítem que desea eliminar\n0- para volver al menú anterior."));
-    if (menuOpcion > 0 && menuOpcion <= conteo.length) {
-        catalogoDeBusqueda[carritoDeCompras[(menuOpcion - 1)].id].stock = catalogoDeBusqueda[carritoDeCompras[(menuOpcion - 1)].id].stock + carritoDeCompras[(menuOpcion - 1)].cantidad;
-        let borrado = carritoDeCompras.splice(menuOpcion - 1, 1);
-        let itemEliminado = conteo.splice(menuOpcion - 1, 1);
-        const listadoCarrito = carritoDeCompras.map((carritoDeCompras) => "-" + carritoDeCompras.cantidad + "x " + carritoDeCompras.nombre + "\n");
-        let menuOpcion1 = parseInt(prompt(itemEliminado + " ha sido eliminado del carrito de compras." + "\nLos Ítems que quedan son:\n" + listadoCarrito + "Desea seguir quitando elementos del carrito de compras?\n1- Si.\n2-No."));
-        if (menuOpcion1 == 1) {
-            QUITARELEMENTOS();
-        } else if (menuOpcion1 == 2) {
-            MENUCARRITO();
-        } else if (menuOpcion1) {
-            alert("Entrada incorrecta, Volviendo al menú anterior...")
-            QUITARELEMENTOS();
+    window.setTimeout(OPCION, 0);
+
+    function OPCION() {
+        let menuOpcion = parseInt(prompt("Ingrese una Opción."));
+        if (menuOpcion > 0 && menuOpcion <= conteo.length) {
+            catalogoDeBusqueda[carritoDeCompras[(menuOpcion - 1)].id].stock = catalogoDeBusqueda[carritoDeCompras[(menuOpcion - 1)].id].stock + carritoDeCompras[(menuOpcion - 1)].cantidad;
+            let borrado = carritoDeCompras.splice(menuOpcion - 1, 1);
+            let itemEliminado = conteo.splice(menuOpcion - 1, 1);
+            const listadoCarrito = carritoDeCompras.map((carritoDeCompras) => "-" + carritoDeCompras.cantidad + "x " + carritoDeCompras.nombre + "<br />");
+            contenido.innerHTML = itemEliminado + " ha sido eliminado del carrito de compras." + "<br />Los Ítems que quedan son:<br />" + listadoCarrito + "Desea seguir quitando elementos del carrito de compras?<br />1- Si.<br />2-No.";
+            window.setTimeout(OPCION1, 0);
+
+            function OPCION1() {
+                let menuOpcion1 = parseInt(prompt("Ingrese una Opción."));
+                if (menuOpcion1 == 1) {
+                    contenido.innerHTML = introQuitar();
+                    window.setTimeout(QUITARELEMENTOS, 0);
+                } else if (menuOpcion1 == 2) {
+                    contenido.innerHTML = introCarrito();
+                    window.setTimeout(MENUCARRITO, 0);
+                } else if (menuOpcion1) {
+                    alerta.innerHTML = "Entrada incorrecta, Volviendo al menú anterior...";
+                    contenido.innerHTML = introQuitar();
+                    window.setTimeout(QUITARELEMENTOS, 0);
+                }
+            }
+        } else if (menuOpcion == 0) {
+            contenido.innerHTML = introCarrito();
+            window.setTimeout(MENUCARRITO, 0);
+        } else {
+            alerta.innerHTML = "Entrada incorrecta, Volviendo al menú anterior...";
+            contenido.innerHTML = introQuitar();
+            window.setTimeout(QUITARELEMENTOS, 0);
         }
-    } else if (menuOpcion == 0) {
-        MENUCARRITO();
-    } else {
-        alert("Entrada incorrecta, Volviendo al menú anterior...")
-        QUITARELEMENTOS();
     }
 }
 
-function VOLVERALMENU() {
-    alert("Volviendo al menú principal...");
-    MENUPRINCIPAL();
-}
-
 function CIERREDECOMPRA() {
-    const listadoCarrito = carritoDeCompras.map((carritoDeCompras) => "-" + carritoDeCompras.cantidad + "x " + carritoDeCompras.nombre + "\nSubtotal: $" + carritoDeCompras.subtotal + "\n");
+    const listadoCarrito = carritoDeCompras.map((carritoDeCompras) => "-" + carritoDeCompras.cantidad + "x " + carritoDeCompras.nombre + "<br />Subtotal: $" + carritoDeCompras.subtotal + "<br />");
     const precioSinIva = carritoDeCompras.reduce((acumulador, carritoDeCompras) => {
         return acumulador + carritoDeCompras.subtotal;
     }, 0);
     const precioConIva = precioSinIva * iva;
-    prompt("---Carrito de Compras---\nPor favor introduzca a continuación un correo electrónico para poder enviarte los productos.");
-    alert("---Carrito de Compras---\nMuchas gracias por su compra, " + nombre + ", su envío se está procesando.");
+    window.setTimeout(ENTREGABOLETA, 0);
+
+    function ENTREGABOLETA() {
+        prompt("Ingrese e-Mail");
+    }
     const fechaDeCompra = new Date();
     const dia = fechaDeCompra.toLocaleDateString();
     const hora = fechaDeCompra.toLocaleTimeString();
-    alert("Su boleta de compra:\nFactura tipo C consumidor final\nAnabella Avena n°0001-000001\nFecha de compra: " + dia + "\nhora: " + hora + "\nNombre: " + nombre + "\nApellido: " + apellido + "\nItems comprados:\n" + listadoCarrito + "\nTotal monto: $" + (precioConIva.toFixed(2) + "-.\nMuchas gracias por su compra!"));
-    carritoDeCompras = [];
-    EXITPROGRAM();
+    contenido.innerHTML = "Su boleta de compra:<br />Factura tipo C consumidor final<br />Anabella Avena n°0001-000001<br />Fecha de compra: " + dia + "<br />hora: " + hora + "<br />Nombre: " + nombre + "<br />Apellido: " + apellido + "<br />Items comprados:<br />" + listadoCarrito + "<br />Total monto: $" + precioConIva.toFixed(2) + "-.<br />Muchas gracias por su compra!";
+    carritoDeCompras.splice(0, carritoDeCompras.length);
+    window.setTimeout(EXITPROGRAM, 0);
 }
 
 function EXITPROGRAM() {
     if (carritoDeCompras.length > 0) {
-        let menuOpcion = parseInt(prompt("Al parecer ha dejado cargado el carrito de compras.\nDesea revisarlo antes de salir?\n1- Si.\n2- No."));
-        if (menuOpcion == 1) {
-            MENUCARRITO();
-        } else if (menuOpcion) {
-            return alert("Está saliendo de la tienda, esperamos volver a verlo pronto.");
-        } else {
-            Alert("Entrada inválida, debe ingresar una opción valida.\nVolvamos a intentarlo.");
-            EXITPROGRAM();
+        alerta.innerHTML = "Al parecer ha dejado cargado el carrito de compras.<br />Desea revisarlo antes de salir?<br />1- Si.<br />2- No.";
+        window.setTimeout(OPCION, 0);
+
+        function OPCION() {
+            let menuOpcion = parseInt(prompt("Ingrese una Opción."));
+            if (menuOpcion == 1) {
+                titulo.innerHTML = tituloMenuCarrito;
+                contenido.innerHTML = introCarrito();
+                alerta.replaceChildren();
+                window.setTimeout(MENUCARRITO, 0);
+            } else if (menuOpcion) {
+                alerta.innerHTML = "Está saliendo de la tienda, esperamos volver a verlo pronto.";
+            } else {
+                alerta.innerHTML = "Entrada inválida, debe ingresar una opción valida.<br />Volvamos a intentarlo.";
+                window.setTimeout(EXITPROGRAM, 0);
+            }
         }
     } else {
-        return alert("Está saliendo de la tienda, esperamos volver a verlo pronto.");
+        alerta.innerHTML = "Ha saliendo de la tienda, esperamos volver a verlo pronto.";
     }
 }
-*/
